@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tic Tac Toe</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Tic Tac Toe</h1>
+    <div id="status">Player X's turn</div>
+    <div class="board" id="board">
+      <div class="cell" data-index="0"></div>
+      <div class="cell" data-index="1"></div>
+      <div class="cell" data-index="2"></div>
+      <div class="cell" data-index="3"></div>
+      <div class="cell" data-index="4"></div>
+      <div class="cell" data-index="5"></div>
+      <div class="cell" data-index="6"></div>
+      <div class="cell" data-index="7"></div>
+      <div class="cell" data-index="8"></div>
+    </div>
+    <button id="restart">Restart</button>
+  </div>
+
+  <script src="game.js"></script>
+  <script>
+    (function () {
+      var game = TicTacToe.createGame();
+      var cells = document.querySelectorAll('.cell');
+      var statusEl = document.getElementById('status');
+      var restartBtn = document.getElementById('restart');
+
+      function updateUI() {
+        for (var i = 0; i < cells.length; i++) {
+          var value = game.board[i];
+          cells[i].textContent = value || '';
+          cells[i].className = 'cell';
+          if (value === 'X') {
+            cells[i].classList.add('x');
+          } else if (value === 'O') {
+            cells[i].classList.add('o');
+          }
+        }
+
+        var status = game.getGameStatus();
+        var winningCells = game.getWinningCells();
+
+        if (winningCells) {
+          for (var j = 0; j < winningCells.length; j++) {
+            cells[winningCells[j]].classList.add('winner');
+          }
+        }
+
+        switch (status) {
+          case 'X_WINS':
+            statusEl.textContent = 'Player X wins!';
+            break;
+          case 'O_WINS':
+            statusEl.textContent = 'Player O wins!';
+            break;
+          case 'DRAW':
+            statusEl.textContent = "It's a draw!";
+            break;
+          default:
+            statusEl.textContent = "Player " + game.currentPlayer + "'s turn";
+        }
+      }
+
+      function handleCellClick(e) {
+        var index = parseInt(e.target.getAttribute('data-index'), 10);
+        if (isNaN(index)) return;
+        game.makeMove(index);
+        updateUI();
+      }
+
+      for (var i = 0; i < cells.length; i++) {
+        cells[i].addEventListener('click', handleCellClick);
+      }
+
+      restartBtn.addEventListener('click', function () {
+        game.resetGame();
+        updateUI();
+      });
+    })();
+  </script>
+</body>
+</html>
