@@ -1,6 +1,32 @@
 use std::fmt;
 use std::io::{self, Write};
 
+// ANSI escape codes
+#[allow(dead_code)]
+const RESET: &str = "\x1b[0m";
+#[allow(dead_code)]
+const BOLD: &str = "\x1b[1m";
+#[allow(dead_code)]
+const DIM: &str = "\x1b[2m";
+#[allow(dead_code)]
+const COLOR_X: &str = "\x1b[96m"; // bright cyan
+#[allow(dead_code)]
+const COLOR_O: &str = "\x1b[95m"; // bright magenta
+#[allow(dead_code)]
+const COLOR_POS: &str = "\x1b[90m"; // dim gray
+#[allow(dead_code)]
+const COLOR_GRID: &str = "\x1b[37m"; // white
+#[allow(dead_code)]
+const COLOR_ERROR: &str = "\x1b[91m"; // bright red
+#[allow(dead_code)]
+const COLOR_PROMPT: &str = "\x1b[93m"; // bright yellow
+#[allow(dead_code)]
+const COLOR_WIN: &str = "\x1b[1;92m"; // bold bright green
+#[allow(dead_code)]
+const COLOR_DRAW: &str = "\x1b[1;93m"; // bold bright yellow
+#[allow(dead_code)]
+const CLEAR_SCREEN: &str = "\x1b[2J\x1b[H";
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum Cell {
     Empty,
@@ -84,29 +110,38 @@ impl Board {
             .iter()
             .all(|row| row.iter().all(|cell| *cell != Cell::Empty))
     }
+
+    #[allow(dead_code)]
+    fn move_count(&self) -> usize {
+        self.cells
+            .iter()
+            .flatten()
+            .filter(|c| **c != Cell::Empty)
+            .count()
+    }
 }
 
 impl fmt::Display for Board {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let pad = "   ";
+        writeln!(f, "{}{}┌───┬───┬───┐{}", pad, COLOR_GRID, RESET)?;
         for row in 0..3 {
+            write!(f, "{}{}│{}", pad, COLOR_GRID, RESET)?;
             for col in 0..3 {
                 let pos = row * 3 + col + 1;
-                if col > 0 {
-                    write!(f, " | ")?;
-                } else {
-                    write!(f, " ")?;
+                match self.cells[row][col] {
+                    Cell::X => write!(f, " {}{}X{} ", BOLD, COLOR_X, RESET)?,
+                    Cell::O => write!(f, " {}{}O{} ", BOLD, COLOR_O, RESET)?,
+                    Cell::Empty => write!(f, " {}{}{} ", COLOR_POS, pos, RESET)?,
                 }
-                if self.cells[row][col] == Cell::Empty {
-                    write!(f, "{}", pos)?;
-                } else {
-                    write!(f, "{}", self.cells[row][col])?;
-                }
+                write!(f, "{}│{}", COLOR_GRID, RESET)?;
             }
             writeln!(f)?;
             if row < 2 {
-                writeln!(f, "-----------")?;
+                writeln!(f, "{}{}├───┼───┼───┤{}", pad, COLOR_GRID, RESET)?;
             }
         }
+        writeln!(f, "{}{}└───┴───┴───┘{}", pad, COLOR_GRID, RESET)?;
         Ok(())
     }
 }
@@ -122,6 +157,17 @@ fn read_line() -> String {
         .read_line(&mut input)
         .expect("Failed to read input");
     input
+}
+
+#[allow(dead_code)]
+fn print_title() {
+    println!("{}{}╔═══════════════════════════╗{}", BOLD, COLOR_X, RESET);
+    println!(
+        "{}{}║     {}T I C  T A C  T O E{}     ║{}",
+        BOLD, COLOR_X, COLOR_O, COLOR_X, RESET
+    );
+    println!("{}{}╚═══════════════════════════╝{}", BOLD, COLOR_X, RESET);
+    println!();
 }
 
 fn main() {
