@@ -1,5 +1,5 @@
 use std::fmt;
-use std::io::{self, Write};
+use std::io::{self, BufWriter, Write};
 
 // ANSI escape codes
 const RESET: &str = "\x1b[0m";
@@ -14,6 +14,24 @@ const COLOR_PROMPT: &str = "\x1b[93m"; // bright yellow
 const COLOR_WIN: &str = "\x1b[1;92m"; // bold bright green
 const COLOR_DRAW: &str = "\x1b[1;93m"; // bold bright yellow
 const CLEAR_SCREEN: &str = "\x1b[2J\x1b[H";
+
+const WIN_CONDITIONS: [[(usize, usize); 3]; 8] = [
+    // Rows
+    [(0, 0), (0, 1), (0, 2)],
+    [(1, 0), (1, 1), (1, 2)],
+    [(2, 0), (2, 1), (2, 2)],
+    // Columns
+    [(0, 0), (1, 0), (2, 0)],
+    [(0, 1), (1, 1), (2, 1)],
+    [(0, 2), (1, 2), (2, 2)],
+    // Diagonals
+    [(0, 0), (1, 1), (2, 2)],
+    [(0, 2), (1, 1), (2, 0)],
+];
+
+const GRID_TOP: &str = "┌───┬───┬───┐";
+const GRID_MID: &str = "├───┼───┼───┤";
+const GRID_BOT: &str = "└───┴───┴───┘";
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum Cell {
@@ -43,6 +61,7 @@ impl Board {
         }
     }
 
+    #[inline]
     fn make_move(&mut self, position: usize, player: Cell) -> Result<(), String> {
         if !(1..=9).contains(&position) {
             return Err(format!(
@@ -58,47 +77,25 @@ impl Board {
         Ok(())
     }
 
+    #[inline]
     fn check_winner(&self) -> Option<Cell> {
-        // Check rows
-        for row in 0..3 {
-            if self.cells[row][0] != Cell::Empty
-                && self.cells[row][0] == self.cells[row][1]
-                && self.cells[row][1] == self.cells[row][2]
-            {
-                return Some(self.cells[row][0]);
+        for &[(r1, c1), (r2, c2), (r3, c3)] in &WIN_CONDITIONS {
+            let cell = self.cells[r1][c1];
+            if cell != Cell::Empty && cell == self.cells[r2][c2] && cell == self.cells[r3][c3] {
+                return Some(cell);
             }
-        }
-        // Check columns
-        for col in 0..3 {
-            if self.cells[0][col] != Cell::Empty
-                && self.cells[0][col] == self.cells[1][col]
-                && self.cells[1][col] == self.cells[2][col]
-            {
-                return Some(self.cells[0][col]);
-            }
-        }
-        // Check diagonals
-        if self.cells[0][0] != Cell::Empty
-            && self.cells[0][0] == self.cells[1][1]
-            && self.cells[1][1] == self.cells[2][2]
-        {
-            return Some(self.cells[0][0]);
-        }
-        if self.cells[0][2] != Cell::Empty
-            && self.cells[0][2] == self.cells[1][1]
-            && self.cells[1][1] == self.cells[2][0]
-        {
-            return Some(self.cells[0][2]);
         }
         None
     }
 
+    #[inline]
     fn is_full(&self) -> bool {
         self.cells
             .iter()
             .all(|row| row.iter().all(|cell| *cell != Cell::Empty))
     }
 
+    #[inline]
     fn move_count(&self) -> usize {
         self.cells
             .iter()
@@ -111,7 +108,7 @@ impl Board {
 impl fmt::Display for Board {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let pad = "   ";
-        writeln!(f, "{}{}┌───┬───┬───┐{}", pad, COLOR_GRID, RESET)?;
+        writeln!(f, "{}{}{}{}", pad, COLOR_GRID, GRID_TOP, RESET)?;
         for row in 0..3 {
             write!(f, "{}{}│{}", pad, COLOR_GRID, RESET)?;
             for col in 0..3 {
@@ -125,14 +122,15 @@ impl fmt::Display for Board {
             }
             writeln!(f)?;
             if row < 2 {
-                writeln!(f, "{}{}├───┼───┼───┤{}", pad, COLOR_GRID, RESET)?;
+                writeln!(f, "{}{}{}{}", pad, COLOR_GRID, GRID_MID, RESET)?;
             }
         }
-        writeln!(f, "{}{}└───┴───┴───┘{}", pad, COLOR_GRID, RESET)?;
+        writeln!(f, "{}{}{}{}", pad, COLOR_GRID, GRID_BOT, RESET)?;
         Ok(())
     }
 }
 
+#[inline]
 fn position_to_row_col(position: usize) -> (usize, usize) {
     let index = position - 1;
     (index / 3, index % 3)
@@ -146,28 +144,42 @@ fn read_line() -> String {
     input
 }
 
-fn print_title() {
-    println!("{}{}╔═══════════════════════════╗{}", BOLD, COLOR_X, RESET);
-    println!(
+fn print_title(w: &mut impl Write) -> io::Result<()> {
+    writeln!(
+        w,
+        "{}{}╔═══════════════════════════╗{}",
+        BOLD, COLOR_X, RESET
+    )?;
+    writeln!(
+        w,
         "{}{}║     {}T I C  T A C  T O E{}     ║{}",
         BOLD, COLOR_X, COLOR_O, COLOR_X, RESET
-    );
-    println!("{}{}╚═══════════════════════════╝{}", BOLD, COLOR_X, RESET);
-    println!();
+    )?;
+    writeln!(
+        w,
+        "{}{}╚═══════════════════════════╝{}",
+        BOLD, COLOR_X, RESET
+    )?;
+    writeln!(w)?;
+    Ok(())
 }
 
-fn main() {
-    print!("{}", CLEAR_SCREEN);
-    print_title();
+fn run() -> io::Result<()> {
+    let stdout = io::stdout();
+    let mut writer = BufWriter::new(stdout.lock());
+
+    write!(writer, "{}", CLEAR_SCREEN)?;
+    print_title(&mut writer)?;
+    writer.flush()?;
 
     loop {
         let mut board = Board::new();
         let mut current_player = Cell::X;
 
         loop {
-            print!("{}", CLEAR_SCREEN);
-            print_title();
-            println!("{}", board);
+            write!(writer, "{}", CLEAR_SCREEN)?;
+            print_title(&mut writer)?;
+            writeln!(writer, "{}", board)?;
 
             let (player_str, player_color) = if current_player == Cell::X {
                 ("X", COLOR_X)
@@ -175,7 +187,8 @@ fn main() {
                 ("O", COLOR_O)
             };
 
-            println!(
+            writeln!(
+                writer,
                 "   {}Move {}{} | {}{}{}{}'s turn{}",
                 DIM,
                 board.move_count() + 1,
@@ -185,14 +198,15 @@ fn main() {
                 player_str,
                 RESET,
                 RESET
-            );
-            println!();
+            )?;
+            writeln!(writer)?;
 
-            print!(
+            write!(
+                writer,
                 "   {}Player {}{}{}{}, enter your move (1-9): {}",
                 COLOR_PROMPT, BOLD, player_color, player_str, COLOR_PROMPT, RESET
-            );
-            io::stdout().flush().expect("Failed to flush stdout");
+            )?;
+            writer.flush()?;
 
             let input = read_line();
             let trimmed = input.trim();
@@ -200,21 +214,22 @@ fn main() {
             let position: usize = match trimmed.parse() {
                 Ok(num) => num,
                 Err(_) => {
-                    println!(
+                    writeln!(
+                        writer,
                         "\n   {}Invalid input: '{}'. Please enter a number between 1 and 9.{}",
                         COLOR_ERROR, trimmed, RESET
-                    );
-                    print!("   Press Enter to continue...");
-                    io::stdout().flush().expect("Failed to flush stdout");
+                    )?;
+                    write!(writer, "   Press Enter to continue...")?;
+                    writer.flush()?;
                     let _ = read_line();
                     continue;
                 }
             };
 
             if let Err(msg) = board.make_move(position, current_player) {
-                println!("\n   {}{}{}", COLOR_ERROR, msg, RESET);
-                print!("   Press Enter to continue...");
-                io::stdout().flush().expect("Failed to flush stdout");
+                writeln!(writer, "\n   {}{}{}", COLOR_ERROR, msg, RESET)?;
+                write!(writer, "   Press Enter to continue...")?;
+                writer.flush()?;
                 let _ = read_line();
                 continue;
             }
@@ -225,25 +240,28 @@ fn main() {
                 } else {
                     ("O", COLOR_O)
                 };
-                print!("{}", CLEAR_SCREEN);
-                print_title();
-                println!("{}", board);
-                println!();
-                println!(
+                write!(writer, "{}", CLEAR_SCREEN)?;
+                print_title(&mut writer)?;
+                writeln!(writer, "{}", board)?;
+                writeln!(writer)?;
+                writeln!(
+                    writer,
                     "   {} Player {}{}{}{} wins! {}",
                     COLOR_WIN, BOLD, winner_color, winner_str, COLOR_WIN, RESET
-                );
-                println!();
+                )?;
+                writeln!(writer)?;
+                writer.flush()?;
                 break;
             }
 
             if board.is_full() {
-                print!("{}", CLEAR_SCREEN);
-                print_title();
-                println!("{}", board);
-                println!();
-                println!("   {} It's a draw! {}", COLOR_DRAW, RESET);
-                println!();
+                write!(writer, "{}", CLEAR_SCREEN)?;
+                print_title(&mut writer)?;
+                writeln!(writer, "{}", board)?;
+                writeln!(writer)?;
+                writeln!(writer, "   {} It's a draw! {}", COLOR_DRAW, RESET)?;
+                writeln!(writer)?;
+                writer.flush()?;
                 break;
             }
 
@@ -254,16 +272,27 @@ fn main() {
             };
         }
 
-        print!("   {}Play again? (y/n): {}", COLOR_PROMPT, RESET);
-        io::stdout().flush().expect("Failed to flush stdout");
+        write!(writer, "   {}Play again? (y/n): {}", COLOR_PROMPT, RESET)?;
+        writer.flush()?;
 
         let input = read_line();
         let answer = input.trim().to_lowercase();
         if answer != "y" {
-            println!("\n   {}{}Thanks for playing! {}", BOLD, COLOR_X, RESET);
+            writeln!(
+                writer,
+                "\n   {}{}Thanks for playing! {}",
+                BOLD, COLOR_X, RESET
+            )?;
+            writer.flush()?;
             break;
         }
     }
+
+    Ok(())
+}
+
+fn main() {
+    run().expect("I/O error");
 }
 
 #[cfg(test)]
