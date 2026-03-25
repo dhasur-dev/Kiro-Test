@@ -1,0 +1,7 @@
+{
+  "task_id": "task-tic-tac-toe-rust",
+  "task_description": "Create a complete Tic Tac Toe game in Rust as a CLI application. Two-player mode with board display, win/draw detection, input validation, replay option, and unit tests. Uses only the Rust standard library (no external crates) due to INTEGRATIONS_ONLY network constraints.",
+  "status": "in_progress",
+  "feature_order": ["FEAT-001"],
+  "blocked_reason": null
+}
