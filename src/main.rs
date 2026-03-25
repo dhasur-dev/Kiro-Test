@@ -2,29 +2,17 @@ use std::fmt;
 use std::io::{self, Write};
 
 // ANSI escape codes
-#[allow(dead_code)]
 const RESET: &str = "\x1b[0m";
-#[allow(dead_code)]
 const BOLD: &str = "\x1b[1m";
-#[allow(dead_code)]
 const DIM: &str = "\x1b[2m";
-#[allow(dead_code)]
 const COLOR_X: &str = "\x1b[96m"; // bright cyan
-#[allow(dead_code)]
 const COLOR_O: &str = "\x1b[95m"; // bright magenta
-#[allow(dead_code)]
 const COLOR_POS: &str = "\x1b[90m"; // dim gray
-#[allow(dead_code)]
 const COLOR_GRID: &str = "\x1b[37m"; // white
-#[allow(dead_code)]
 const COLOR_ERROR: &str = "\x1b[91m"; // bright red
-#[allow(dead_code)]
 const COLOR_PROMPT: &str = "\x1b[93m"; // bright yellow
-#[allow(dead_code)]
 const COLOR_WIN: &str = "\x1b[1;92m"; // bold bright green
-#[allow(dead_code)]
 const COLOR_DRAW: &str = "\x1b[1;93m"; // bold bright yellow
-#[allow(dead_code)]
 const CLEAR_SCREEN: &str = "\x1b[2J\x1b[H";
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -111,7 +99,6 @@ impl Board {
             .all(|row| row.iter().all(|cell| *cell != Cell::Empty))
     }
 
-    #[allow(dead_code)]
     fn move_count(&self) -> usize {
         self.cells
             .iter()
@@ -159,7 +146,6 @@ fn read_line() -> String {
     input
 }
 
-#[allow(dead_code)]
 fn print_title() {
     println!("{}{}╔═══════════════════════════╗{}", BOLD, COLOR_X, RESET);
     println!(
@@ -171,18 +157,41 @@ fn print_title() {
 }
 
 fn main() {
-    println!("Welcome to Tic Tac Toe!");
-    println!();
+    print!("{}", CLEAR_SCREEN);
+    print_title();
 
     loop {
         let mut board = Board::new();
         let mut current_player = Cell::X;
 
         loop {
+            print!("{}", CLEAR_SCREEN);
+            print_title();
             println!("{}", board);
 
-            let player_name = if current_player == Cell::X { "X" } else { "O" };
-            print!("Player {}, enter your move (1-9): ", player_name);
+            let (player_str, player_color) = if current_player == Cell::X {
+                ("X", COLOR_X)
+            } else {
+                ("O", COLOR_O)
+            };
+
+            println!(
+                "   {}Move {}{} | {}{}{}{}'s turn{}",
+                DIM,
+                board.move_count() + 1,
+                RESET,
+                BOLD,
+                player_color,
+                player_str,
+                RESET,
+                RESET
+            );
+            println!();
+
+            print!(
+                "   {}Player {}{}{}{}, enter your move (1-9): {}",
+                COLOR_PROMPT, BOLD, player_color, player_str, COLOR_PROMPT, RESET
+            );
             io::stdout().flush().expect("Failed to flush stdout");
 
             let input = read_line();
@@ -192,29 +201,49 @@ fn main() {
                 Ok(num) => num,
                 Err(_) => {
                     println!(
-                        "Invalid input: '{}'. Please enter a number between 1 and 9.",
-                        trimmed
+                        "\n   {}Invalid input: '{}'. Please enter a number between 1 and 9.{}",
+                        COLOR_ERROR, trimmed, RESET
                     );
-                    println!();
+                    print!("   Press Enter to continue...");
+                    io::stdout().flush().expect("Failed to flush stdout");
+                    let _ = read_line();
                     continue;
                 }
             };
 
             if let Err(msg) = board.make_move(position, current_player) {
-                println!("{}", msg);
-                println!();
+                println!("\n   {}{}{}", COLOR_ERROR, msg, RESET);
+                print!("   Press Enter to continue...");
+                io::stdout().flush().expect("Failed to flush stdout");
+                let _ = read_line();
                 continue;
             }
 
             if let Some(winner) = board.check_winner() {
+                let (winner_str, winner_color) = if winner == Cell::X {
+                    ("X", COLOR_X)
+                } else {
+                    ("O", COLOR_O)
+                };
+                print!("{}", CLEAR_SCREEN);
+                print_title();
                 println!("{}", board);
-                println!("Player {} wins!", winner);
+                println!();
+                println!(
+                    "   {} Player {}{}{}{} wins! {}",
+                    COLOR_WIN, BOLD, winner_color, winner_str, COLOR_WIN, RESET
+                );
+                println!();
                 break;
             }
 
             if board.is_full() {
+                print!("{}", CLEAR_SCREEN);
+                print_title();
                 println!("{}", board);
-                println!("It's a draw!");
+                println!();
+                println!("   {} It's a draw! {}", COLOR_DRAW, RESET);
+                println!();
                 break;
             }
 
@@ -225,17 +254,15 @@ fn main() {
             };
         }
 
-        println!();
-        print!("Play again? (y/n): ");
+        print!("   {}Play again? (y/n): {}", COLOR_PROMPT, RESET);
         io::stdout().flush().expect("Failed to flush stdout");
 
         let input = read_line();
         let answer = input.trim().to_lowercase();
         if answer != "y" {
-            println!("Thanks for playing!");
+            println!("\n   {}{}Thanks for playing! {}", BOLD, COLOR_X, RESET);
             break;
         }
-        println!();
     }
 }
 
@@ -438,10 +465,10 @@ mod tests {
     fn test_board_display_has_separators() {
         let board = Board::new();
         let output = format!("{}", board);
-        // Board should have row separators
-        assert!(output.contains('-'));
-        // Board should have column separators
-        assert!(output.contains('|'));
+        // Board should have Unicode box-drawing horizontal lines
+        assert!(output.contains('\u{2500}')); // ─
+                                              // Board should have Unicode box-drawing vertical lines
+        assert!(output.contains('\u{2502}')); // │
     }
 
     // --- position_to_row_col ---
@@ -743,6 +770,25 @@ mod tests {
         assert_eq!(board.check_winner(), Some(Cell::X));
     }
 
+    fn strip_ansi(s: &str) -> String {
+        let mut result = String::new();
+        let mut chars = s.chars().peekable();
+        while let Some(c) = chars.next() {
+            if c == '\x1b' {
+                // Skip until we hit a letter (the terminator of ANSI sequence)
+                while let Some(&next) = chars.peek() {
+                    chars.next();
+                    if next.is_ascii_alphabetic() {
+                        break;
+                    }
+                }
+            } else {
+                result.push(c);
+            }
+        }
+        result
+    }
+
     #[test]
     fn test_board_display_full_board() {
         let mut board = Board::new();
@@ -760,7 +806,8 @@ mod tests {
         for (pos, player) in moves {
             board.make_move(pos, player).unwrap();
         }
-        let output = format!("{}", board);
+        let raw_output = format!("{}", board);
+        let output = strip_ansi(&raw_output);
         assert!(output.contains('X'));
         assert!(output.contains('O'));
         // Full board should not display any position digits
