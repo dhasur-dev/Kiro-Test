@@ -1,5 +1,9 @@
 # Kiro-Test
 
-dhasur
-dhasur
-Dhanush is awesome
+A simple Python hello world project.
+
+## Usage
+
+```bash
+python hello.py
+```
