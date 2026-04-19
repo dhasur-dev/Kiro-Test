@@ -68,3 +68,32 @@ You should see the following output:
 ```
 Hello, World!
 ```
+
+
+## Java
+
+A classic Java "Hello, World!" program — famously verbose for such a simple task.
+
+### Prerequisites
+
+- [Java JDK](https://www.oracle.com/java/technologies/downloads/) installed on your system
+
+### How to compile and run
+
+Compile the program:
+
+```sh
+javac HelloWorld.java
+```
+
+Run the compiled class:
+
+```sh
+java HelloWorld
+```
+
+You should see the following output:
+
+```
+Hello, World!
+```
