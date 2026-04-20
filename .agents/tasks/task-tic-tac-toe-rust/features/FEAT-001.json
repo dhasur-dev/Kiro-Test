@@ -1,0 +1,34 @@
+{
+  "id": "FEAT-001",
+  "type": "feat",
+  "description": "Create the complete Tic Tac Toe game as a Cargo project at /projects/sandbox/Kiro-Test. The game is a terminal/CLI two-player game using only the Rust standard library.",
+  "status": "in_progress",
+  "steps": [
+    "Step 1: Initialize the Cargo project at /projects/sandbox/Kiro-Test by creating Cargo.toml and src/main.rs. The Cargo.toml should have name = 'tic-tac-toe', version = '0.1.0', edition = '2021', and NO dependencies (empty [dependencies] section). Do NOT run 'cargo init' as it may fail with existing files - create the files manually.",
+    "Step 2: Implement the game board data structure. Use an enum for cell state (Empty, X, O) and a Board struct holding a 3x3 grid (e.g., [[Cell; 3]; 3]). Implement Display trait for the Board to show a visual representation in the terminal with row/column labels for easy input. The board display should be clean and readable, e.g.:\n  1 | 2 | 3\n -----------\n  4 | 5 | 6\n -----------\n  7 | 8 | 9\nwith X and O replacing numbers when played.",
+    "Step 3: Implement game logic functions: (a) check_winner() - checks all 8 win conditions (3 rows, 3 columns, 2 diagonals) and returns the winning player or None. (b) is_draw() - returns true if board is full with no winner. (c) make_move(position, player) - places a mark if the cell is empty, returns Result<(), error> for invalid moves. Players input a number 1-9 corresponding to board positions.",
+    "Step 4: Implement the main game loop in main(): (a) Display welcome message. (b) Show the board. (c) Prompt the current player (X goes first). (d) Read input from stdin, parse as number 1-9. (e) Validate input - handle non-numeric input, out-of-range, and occupied cell with clear error messages. (f) Make the move and check for win/draw. (g) Switch players and repeat. (h) When game ends, display the result and ask if players want to play again (y/n).",
+    "Step 5: Write comprehensive unit tests in a #[cfg(test)] module within src/main.rs. Tests should cover: (a) New board is empty. (b) Making a valid move updates the board. (c) Making a move on an occupied cell returns error. (d) Horizontal win detection (all 3 rows). (e) Vertical win detection (all 3 columns). (f) Diagonal win detection (both diagonals). (g) Draw detection when board is full with no winner. (h) No winner detected on incomplete board. At minimum 10 tests.",
+    "Step 6: Run 'cargo fmt' to format the code, then run 'cargo clippy -- -D warnings' to fix any lint issues, then run 'cargo test' to confirm all tests pass, then run 'cargo build' to confirm compilation."
+  ],
+  "acceptance_criteria": [
+    "'cargo build' compiles successfully with no errors",
+    "'cargo test' passes all unit tests (at least 10 tests)",
+    "'cargo clippy -- -D warnings' produces no warnings",
+    "'cargo fmt -- --check' shows no formatting issues",
+    "The game uses only the Rust standard library (no external dependencies in Cargo.toml)",
+    "Board displays clearly in the terminal with position numbers",
+    "Win detection covers rows, columns, and diagonals",
+    "Draw detection works when board is full",
+    "Invalid input is handled gracefully with error messages",
+    "Players can play again after a game ends"
+  ],
+  "verification": [
+    "cd /projects/sandbox/Kiro-Test && cargo build 2>&1",
+    "cd /projects/sandbox/Kiro-Test && cargo test 2>&1",
+    "cd /projects/sandbox/Kiro-Test && cargo clippy -- -D warnings 2>&1",
+    "cd /projects/sandbox/Kiro-Test && cargo fmt -- --check 2>&1"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

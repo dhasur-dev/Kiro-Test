@@ -1,0 +1,20 @@
+{
+  "project_type": "Rust CLI Tic Tac Toe terminal game",
+  "language": "Rust",
+  "build_system": "cargo (Rust 1.92.0, edition 2021, zero external dependencies)",
+  "test_framework": "built-in #[cfg(test)] module with 49 tests in src/main.rs",
+  "build_command": "cd /projects/sandbox/Kiro-Test && cargo build --release",
+  "test_command": "cd /projects/sandbox/Kiro-Test && cargo test",
+  "verification_instructions": "Run cargo test (49 tests must pass), cargo clippy -- -D warnings (no warnings), cargo fmt -- --check (no diff)",
+  "snapshot_or_generated_files": null,
+  "setup_instructions": "No setup needed - Rust 1.92.0 with rustfmt and clippy pre-installed. Zero external dependencies.",
+  "environment_constraints": "INTEGRATIONS_ONLY network - no crate downloads, no external network. Must use only pre-installed Rust toolchain. No Docker daemon available.",
+  "contribution_requirements": "No CONTRIBUTING.md exists. Branch is feat/tic-tac-toe-rust.",
+  "key_patterns": "Single-file project (src/main.rs, 843 lines). Uses ANSI color constants, Board struct with [[Cell; 3]; 3], separate check_winner/is_full/make_move methods. Tests in a #[cfg(test)] mod tests block at bottom. Uses std::fmt::Display for Board rendering. Uses println!/print! directly to stdout. No buffered I/O. Win checking uses separate loops for rows, columns, and explicit diagonal checks.",
+  "relevant_files": [
+    "/projects/sandbox/Kiro-Test/src/main.rs",
+    "/projects/sandbox/Kiro-Test/Cargo.toml",
+    "/projects/sandbox/Kiro-Test/.gitignore"
+  ],
+  "directory_structure": "Simple single-crate project: Cargo.toml, Cargo.lock, src/main.rs, .gitignore, README.md, target/ (build artifacts)"
+}

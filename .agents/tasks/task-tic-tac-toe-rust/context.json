@@ -1,0 +1,19 @@
+{
+  "project_type": "Rust CLI application - Tic Tac Toe game",
+  "language": "Rust",
+  "build_system": "Cargo (Rust 1.92.0). No external crates allowed due to INTEGRATIONS_ONLY network. Only std library.",
+  "test_framework": "Built-in Rust #[cfg(test)] module with #[test] attributes. Run via cargo test.",
+  "build_command": "cd /projects/sandbox/Kiro-Test && cargo build",
+  "test_command": "cd /projects/sandbox/Kiro-Test && cargo test",
+  "verification_instructions": "1. Run 'cargo build' to confirm compilation. 2. Run 'cargo test' to confirm all unit tests pass. 3. Run 'cargo clippy -- -D warnings' to confirm no lint warnings. 4. Run 'cargo fmt -- --check' to confirm formatting.",
+  "snapshot_or_generated_files": null,
+  "setup_instructions": "No setup needed. Rust 1.92.0 is pre-installed. cargo init in the repo directory to create Cargo.toml and src/main.rs.",
+  "environment_constraints": "INTEGRATIONS_ONLY network - no crate downloads, no cargo registry access. Must use only Rust standard library. Rust 1.92.0 with rustfmt and clippy available.",
+  "contribution_requirements": "No CONTRIBUTING.md found. The repo currently only has a README.md on the feat/tic-tac-toe-rust branch.",
+  "key_patterns": "Greenfield Rust project. The Cargo project should be initialized at the repo root (/projects/sandbox/Kiro-Test) so Cargo.toml is at the top level alongside README.md.",
+  "relevant_files": [
+    "/projects/sandbox/Kiro-Test/Cargo.toml",
+    "/projects/sandbox/Kiro-Test/src/main.rs"
+  ],
+  "directory_structure": "Currently only README.md at repo root. Will become a standard Cargo project: Cargo.toml at root, src/main.rs as the binary entry point."
+}

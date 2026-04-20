@@ -1,0 +1,31 @@
+{
+  "id": "FEAT-002",
+  "type": "feat",
+  "description": "Create a GitHub Actions CI/CD pipeline at .github/workflows/ci.yml with matrix builds, caching, linting, testing, and release binary builds.",
+  "status": "completed",
+  "steps": [
+    "Create directory .github/workflows/ at /projects/sandbox/Kiro-Test/.github/workflows/",
+    "Create .github/workflows/ci.yml with the following structure: name 'CI', trigger on push (all branches) and pull_request (all branches). Define a 'check' job that runs on ubuntu-latest doing: checkout, install stable Rust toolchain (using dtolnay/rust-toolchain@stable), cargo fmt -- --check, cargo clippy -- -D warnings.",
+    "Define a 'test' job in the same workflow with a matrix strategy for os: [ubuntu-latest, macos-latest, windows-latest]. Steps: checkout, install stable Rust toolchain (dtolnay/rust-toolchain@stable), cache cargo registry and target directory (use actions/cache@v4 with key based on runner.os and Cargo.lock hash), run cargo test.",
+    "Define a 'build-release' job that depends on ('needs') both check and test jobs. Matrix on os: [ubuntu-latest, macos-latest, windows-latest]. Steps: checkout, install stable Rust toolchain, cache cargo, run cargo build --release, upload the release binary as an artifact using actions/upload-artifact@v4. The binary path differs by OS: target/release/tic-tac-toe on Linux/macOS, target/release/tic-tac-toe.exe on Windows.",
+    "Define a separate 'release' job that only runs on tag pushes (if: startsWith(github.ref, 'refs/tags/')). It needs build-release. It downloads all artifacts from the build-release job and creates a GitHub release using softprops/action-gh-release@v2 with the binaries attached.",
+    "Ensure the YAML is valid and well-structured. Use proper indentation (2 spaces)."
+  ],
+  "acceptance_criteria": [
+    ".github/workflows/ci.yml exists and is valid YAML",
+    "Workflow triggers on push and pull_request to all branches",
+    "Matrix build tests on ubuntu-latest, macos-latest, windows-latest",
+    "Workflow includes cargo fmt --check, cargo clippy -- -D warnings, cargo test steps",
+    "Workflow includes a release build step with cargo build --release",
+    "Cargo dependency and target directory caching is configured",
+    "A release job creates GitHub releases on tag pushes with binaries attached",
+    "cargo test still passes all 49 tests (no code changes in this feature, just new file)"
+  ],
+  "verification": [
+    "cd /projects/sandbox/Kiro-Test && cat .github/workflows/ci.yml",
+    "cd /projects/sandbox/Kiro-Test && python3 -c \"import yaml; yaml.safe_load(open('.github/workflows/ci.yml'))\" 2>&1 || echo 'YAML validation not available, manual review needed'",
+    "cd /projects/sandbox/Kiro-Test && cargo test"
+  ],
+  "blocked_reason": null,
+  "findings": "Created .github/workflows/ci.yml with 4 jobs: check (fmt+clippy), test (3-OS matrix), build-release (3-OS matrix with artifact upload using matrix include for per-OS binary paths), release (tag-triggered with softprops/action-gh-release). YAML validation module not available in sandbox but file structure verified manually. All 49 tests pass."
+}

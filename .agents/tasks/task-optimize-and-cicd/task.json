@@ -1,0 +1,7 @@
+{
+  "task_id": "task-optimize-and-cicd",
+  "task_description": "Optimize the Rust Tic Tac Toe game for minimum latency (buffered I/O, reduced allocations, optimized win-checking, release profile, inline hints) and set up a proper GitHub Actions CI/CD pipeline with matrix builds, caching, linting, testing, and release binary publishing.",
+  "status": "in_progress",
+  "feature_order": ["FEAT-001", "FEAT-002"],
+  "blocked_reason": null
+}

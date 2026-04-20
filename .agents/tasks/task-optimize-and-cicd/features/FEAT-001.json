@@ -1,0 +1,33 @@
+{
+  "id": "FEAT-001",
+  "type": "feat",
+  "description": "Performance optimization of Rust Tic Tac Toe game for minimum latency: buffered I/O, reduced allocations, optimized win-checking, release profile, and inline hints.",
+  "status": "completed",
+  "steps": [
+    "In Cargo.toml, add a [profile.release] section with opt-level = 3, lto = true, codegen-units = 1, strip = true, panic = 'abort'. Keep the existing [package] and [dependencies] sections unchanged.",
+    "In src/main.rs, add 'use std::io::BufWriter;' to imports. In the main() function, wrap stdout in a BufWriter: let stdout = io::stdout(); let mut writer = BufWriter::new(stdout.lock()); Then replace all print!/println! calls in the game loop (main function only) with write!/writeln! to the buffered writer. Flush the writer before each stdin read_line() call and at the end. The print_title() function should be refactored to accept a &mut impl Write parameter instead of using println! directly.",
+    "Replace the check_winner() method with an optimized version using a const array of win conditions: const WIN_CONDITIONS: [[(usize, usize); 3]; 8] containing all 8 win lines (3 rows, 3 cols, 2 diags). Iterate over WIN_CONDITIONS and check if all 3 cells match and are non-empty. This replaces the current separate row/col/diagonal loops.",
+    "Add #[inline] attribute to hot-path functions: position_to_row_col, Board::check_winner, Board::is_full, Board::make_move, Board::move_count.",
+    "In the make_move() method, replace the format!() calls for error messages with pre-built static strings where possible. For the 'Invalid position' error, the position number must be included so format! is acceptable, but for 'already occupied' consider using a write! to a pre-allocated String or keeping format! since the position number varies. Keep the existing error message text exactly the same so tests continue to pass.",
+    "In the Board Display impl (fmt method), minimize intermediate allocations. The current implementation already uses write! directly to the formatter which is good. Ensure no unnecessary String allocations exist. Consider using const strings for the grid line patterns (top, middle, bottom borders).",
+    "All 49 existing tests must continue to pass. Run cargo test, cargo clippy -- -D warnings, and cargo fmt -- --check to verify."
+  ],
+  "acceptance_criteria": [
+    "cargo test passes all 49 existing tests with zero failures",
+    "cargo clippy -- -D warnings produces no warnings",
+    "cargo fmt -- --check shows no formatting differences",
+    "cargo build --release compiles successfully with the new release profile",
+    "The main() function uses BufWriter wrapping stdout for all terminal output",
+    "check_winner() uses a const WIN_CONDITIONS array instead of separate if-blocks",
+    "Hot-path functions have #[inline] attributes",
+    "Cargo.toml has [profile.release] with opt-level=3, lto=true, codegen-units=1, strip=true, panic=abort"
+  ],
+  "verification": [
+    "cd /projects/sandbox/Kiro-Test && cargo test",
+    "cd /projects/sandbox/Kiro-Test && cargo clippy -- -D warnings",
+    "cd /projects/sandbox/Kiro-Test && cargo fmt -- --check",
+    "cd /projects/sandbox/Kiro-Test && cargo build --release"
+  ],
+  "blocked_reason": null,
+  "findings": "All changes applied cleanly. 49/49 tests pass, zero clippy warnings, clean fmt, release build succeeds. No environment issues. The BufWriter approach required extracting main() logic into run() -> io::Result<()> to use the ? operator on write calls."
+}
