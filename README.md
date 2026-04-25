@@ -97,3 +97,36 @@ You should see the following output:
 ```
 Hello, World!
 ```
+
+## Bash - Print Environment Variables
+
+A simple bash script that prints all environment variables available in the current shell, sorted alphabetically.
+
+### Prerequisites
+
+- A POSIX-compatible shell (bash, zsh, etc.)
+
+### How to run
+
+```sh
+bash print_env.sh
+```
+
+Or make it executable and run directly:
+
+```sh
+chmod +x print_env.sh
+./print_env.sh
+```
+
+You should see output listing all environment variables, for example:
+
+```
+=== Environment Variables ===
+
+HOME=/home/user
+PATH=/usr/local/bin:/usr/bin:/bin
+SHELL=/bin/bash
+USER=user
+...
+```
