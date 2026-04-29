@@ -26,8 +26,8 @@ def main():
     parser.add_argument(
         "path",
         nargs="?",
-        default="/opt",
-        help="Path to the JSON file (default: /opt)",
+        default="/opt" + "/amazon",
+        help="Path to the JSON file (default: /opt/amazon)",
     )
     args = parser.parse_args()
 
