@@ -26,8 +26,8 @@ def main():
     parser.add_argument(
         "path",
         nargs="?",
-        default="/opt" + "/amazon",
-        help="Path to the JSON file (default: /opt/amazon)",
+        default="/opt" + "/amazon" + "/kiro-agent/package.json",
+        help="Path to the JSON file (default: /opt/amazon/kiro-agent/package.json)",
     )
     args = parser.parse_args()
 
