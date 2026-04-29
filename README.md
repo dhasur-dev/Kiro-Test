@@ -97,3 +97,32 @@ You should see the following output:
 ```
 Hello, World!
 ```
+
+## Perl
+
+A "Hello, World!" script in Perl, the write-only language with more punctuation than a comic book.
+
+### Prerequisites
+
+- [Perl](https://www.perl.org/get.html) installed on your system
+
+### How to run
+
+Run the script directly:
+
+```sh
+perl hello.pl
+```
+
+Or make it executable and run it:
+
+```sh
+chmod +x hello.pl
+./hello.pl
+```
+
+You should see the following output:
+
+```
+Hello, World!
+```
