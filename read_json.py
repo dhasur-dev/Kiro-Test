@@ -23,7 +23,12 @@ def main():
     parser = argparse.ArgumentParser(
         description="Read and parse a JSON file from a given path."
     )
-    parser.add_argument("path", help="Path to the JSON file")
+    parser.add_argument(
+        "path",
+        nargs="?",
+        default="/opt",
+        help="Path to the JSON file (default: /opt)",
+    )
     args = parser.parse_args()
 
     try:
