@@ -70,6 +70,35 @@ Hello, World!
 ```
 
 
+## Go
+
+A simple Go program that prints "Hello, World!" to the console.
+
+### Prerequisites
+
+- [Go](https://go.dev/dl/) installed on your system
+
+### How to run
+
+Run directly with:
+
+```sh
+go run hello.go
+```
+
+Or build and run:
+
+```sh
+go build hello.go
+./hello
+```
+
+You should see the following output:
+
+```
+Hello, World!
+```
+
 ## Java
 
 A classic Java "Hello, World!" program — famously verbose for such a simple task.
