@@ -1,0 +1,8 @@
+# Agent task-state directory
+.agents/
+
+# Build artifacts
+hello
+hello_rs
+*.o
+*.class
