@@ -20,11 +20,11 @@ Each language and the source branch it was taken from:
 | Perl (`hello.pl`) | `add-perl-hello-world` |
 | Brainfuck (`hello.bf`) | already on `main` (from PR #6) |
 
-The `README.md` has been rewritten so every language has the same shape: a short description, a `Prerequisites` bullet list linking to the toolchain, a `How to compile and run` (or `How to run`) section with fenced `sh` code blocks, and the expected output. Brainfuck's expected output is documented as `Hello World! Kiro is doing this`, matching the actual output of `hello.bf` on `main`.
+The `README.md` has been rewritten so every language has the same shape: a short description, a `Prerequisites` bullet list linking to the toolchain, a `How to compile and run` (or `How to run`) section with fenced `sh` code blocks, and the expected output. Brainfuck's expected output is documented as the two-line string `Hello World!` / `Kiro is doing this`, matching the verified output of `hello.bf` on `main`.
 
 ## Discarded (off-topic, not hello-world)
 
-These branches are not hello-world exercises and are not being merged. They can be deleted after this PR lands:
+These branches are not hello-world exercises and are not being merged. They are deleted by the cleanup script after this PR lands:
 
 - `feat/tic-tac-toe-game`: a JavaScript/HTML tic-tac-toe game. Not a hello-world program.
 - `feat/tic-tac-toe-rust`: a Rust tic-tac-toe CLI game. Not a hello-world program.
@@ -32,6 +32,15 @@ These branches are not hello-world exercises and are not being merged. They can 
 - `add-read-json-script`: a `read_json.py` JSON reader. Not a hello-world program.
 
 If the user wants any of these preserved, they should be moved to their own repositories before running the cleanup script.
+
+### Source branches (fully absorbed by this PR)
+
+The following branches are the source-of-truth branches whose content has been fully pulled into this PR. They will also be deleted by the cleanup script because their content now lives on `main`:
+
+- `add-dhasur-to-readme`: supplied `main.rs`, `hello.asm`, `Makefile`, and `HelloWorld.java`; all four files are now on `main` via this PR.
+- `add-go-hello-world`: supplied `hello.go`; now on `main` via this PR.
+- `add-python-hello`: supplied `hello.py` (with the `def main()` + `__main__` guard); now on `main` via this PR.
+- `add-perl-hello-world`: supplied `hello.pl` (with `use strict;` / `use warnings;`); now on `main` via this PR.
 
 ## Duplicate branches superseded by this PR
 
@@ -57,12 +66,20 @@ The following branches contain earlier, partial, or redundant versions of conten
 
 ## Post-merge cleanup
 
-After this PR is merged into `main`, run the bundled cleanup script locally to delete every non-main branch from `origin`:
+After this PR is merged into `main`, run the bundled cleanup script locally to delete every non-main branch from the GitHub remote:
 
 ```sh
 ./scripts/delete-stale-branches.sh
 ```
 
-The script prints a warning, prompts for `DELETE` confirmation, and only then issues `git push origin --delete <branch>` for each of the 25 stale branches listed above (plus the discarded off-topic branches). It never deletes `main`.
+If your GitHub remote is named something other than `origin`, pass its name as the first argument:
 
-Important: `add-dhasur-to-readme` is currently the GitHub default branch for this repository. GitHub will refuse to delete the default branch, so before running the cleanup script the user must change the default branch to `main` in the repository's GitHub settings (Settings > Branches > Default branch). Once `main` is the default, the script will succeed in removing every other branch.
+```sh
+./scripts/delete-stale-branches.sh my-remote
+```
+
+The script prints a warning, verifies that the remote's default branch is `main` (and aborts with a clear error if it isn't), prompts for `DELETE` confirmation, and only then issues `git push "<remote>" --delete <branch>` for each of the 25 stale branches listed above, which includes the 4 off-topic branches above. It never deletes `main`.
+
+The arithmetic is: 4 off-topic + 4 source + 17 superseded = 25.
+
+Important: `add-dhasur-to-readme` is currently the GitHub default branch for this repository. GitHub refuses to delete the default branch, so before running the cleanup script the user must change the default branch to `main` in the repository's GitHub settings (Settings > Branches > Default branch). The script performs this check itself and refuses to run until the default is `main`.
