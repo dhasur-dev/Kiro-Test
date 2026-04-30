@@ -185,5 +185,6 @@ bf hello.bf
 You should see the following output:
 
 ```
-Hello World! Kiro is doing this
+Hello World!
+Kiro is doing this
 ```
